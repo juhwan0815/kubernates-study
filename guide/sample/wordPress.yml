@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mysql # Deployment 이름
+  labels:
+    app: wordpress # Deployment 라벨
+spec:
+  selector:
+    matchLabels: # 감시할 pod 라벨
+      app: wordpress
+      tier: mysql
+  template:
+    metadata:
+      labels: # 생성할 pod 라벨
+        app: wordpress
+        tier: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mariadb:10.7
+          env:
+            - name: MYSQL_DATABASE
+              value: wordpress
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mysql # Service 이름
+  labels:
+    app: wordpress # Service 라벨
+spec:
+  ports:
+    - port: 3306 # pod 연결할 포트, 노드 포트 지정 X -> 자동 할당
+  selector: # 서비스가 접근할 Pod 의 Label
+    app: wordpress
+    tier: mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress # Deployment 이름
+  labels:
+    app: wordpress # Deployment 라벨
+spec:
+  selector:
+    matchLabels: # 감시할 Pod 라벨
+      app: wordpress
+      tier: frontend
+  template:
+    metadata:
+      labels: # 생성할 Pod 라벨
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+        - name: wordpress
+          image: wordpress:5.9.1-php8.1-apache
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: wordpress-mysql
+            - name: WORDPRESS_DB_NAME
+              value: wordpress
+            - name: WORDPRESS_DB_USER
+              value: root
+            - name: WORDPRESS_DB_PASSWORD
+              value: password
+          ports:
+            - containerPort: 80
+              name: wordpress
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress # Service 이름
+  labels:
+    app: wordpress # Service 라벨
+spec:
+  type: NodePort
+  ports:
+    - port: 80 # 연결할 포트
+      nodePort: 30000 # 노드에 오픈할 Port
+  selector: # 서비스가 접근할 Pod 의 Label
+    app: wordpress
+    tier: frontend

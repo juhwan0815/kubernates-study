@@ -1,0 +1,11 @@
+apiVersion: v1 # 오브젝트 버전
+kind: Pod # 종류 Pod, ReplicaSet, Deployment, Service ..
+metadata: # 메타 데이터 name, label, annotation(주석)
+  name: echo
+  labels:
+    app: echo
+spec: # 상세명세
+  containers:
+    - name: app
+      image: ghcr.io/subicura/echo:v1
+

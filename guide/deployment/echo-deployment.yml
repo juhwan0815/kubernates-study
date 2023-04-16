@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-deploy
+spec:
+  # label 체크 -> 원하는 수의 pod 가 없으면 새로운 pod 생성
+  replicas: 4 # 원하는 pod 개수
+  selector: # label 체크 조건
+    matchLabels:
+      app: echo
+      tier: app
+  template: # 생성할 pod 명세
+    metadata:
+      labels:
+        app: echo
+        tier: app
+    spec:
+      containers:
+        - name: echo
+          image: ghcr.io/subicura/echo:v1

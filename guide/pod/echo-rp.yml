@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: echo-rp
+  labels:
+    app: echo
+spec:
+  containers:
+    - name: app
+      image: ghcr.io/subicura/echo:v1
+      # 컨테이너가 준비되었는지 체크하고 정상적으로 준비되지 않았다면 Pod 로 들어오는 요청만 제외
+      # Pod 를 재시작하지 않고 요청만 제외
+      readinessProbe:
+        # 잘못된 포트 및 경로
+        httpGet:
+          port: 8080
+          path: /not/exist
+        initialDelaySeconds: 5
+        timeoutSeconds: 2 # Default 1
+        periodSeconds: 5 # Defaults 10
+        failureThreshold: 1 # Defaults 3
